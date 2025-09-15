@@ -41,6 +41,9 @@ namespace BibliotecaAPI.Utilidades
             //        // con ! le decimos que el autor no sera nulo
             //    ));
 
+            CreateMap<LibroCreacionDTO, AutorLibro>()
+                .ForMember(ent => ent.Libro, config => config.MapFrom(dto => new Libro { Titulo = dto.Titulo}));
+
             CreateMap<ComentarioCreacionDTO, Comentario>();
             CreateMap<ComentarioPatchDTO, Comentario>().ReverseMap();
             CreateMap<Comentario, ComentarioDTO>();
