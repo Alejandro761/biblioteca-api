@@ -4,6 +4,15 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var diccionarioConfiguraciones = new Dictionary<string, string>
+{
+    {"quien_soy", "un diccionario en memoria" }
+};
+
+builder.Configuration.AddInMemoryCollection(diccionarioConfiguraciones!);
+
+// Area de servicios
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 //modificamos el serealizador de json para ignorar los ciclos en las consultas

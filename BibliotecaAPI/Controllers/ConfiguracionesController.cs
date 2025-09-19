@@ -17,6 +17,13 @@ namespace BibliotecaAPI.Controllers
             seccion_02 = configuration.GetSection("seccion_2");
         }
 
+        [HttpGet("proveedores")]
+        public ActionResult GetProveedor()
+        {
+            var valor = configuration.GetValue<string>("quien_soy");
+            return Ok (new { valor });
+        }
+
         [HttpGet("obtenertodos")]
         public ActionResult GetObtenerTodos()
         {
