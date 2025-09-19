@@ -1,3 +1,4 @@
+using BibliotecaAPI;
 using BibliotecaAPI.Datos;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -12,6 +13,13 @@ var diccionarioConfiguraciones = new Dictionary<string, string>
 builder.Configuration.AddInMemoryCollection(diccionarioConfiguraciones!);
 
 // Area de servicios
+
+builder.Services.AddOptions<PersonaOpciones>().
+    Bind(builder.Configuration.GetSection(PersonaOpciones.Seccion))
+    //las siguientes funciones validan las restricciones
+    //puestas en la clase PersonaOpciones
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
