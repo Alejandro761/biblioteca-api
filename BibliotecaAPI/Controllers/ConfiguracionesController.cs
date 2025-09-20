@@ -13,7 +13,7 @@ namespace BibliotecaAPI.Controllers
         private readonly IConfigurationSection seccion_02;
 
         public ConfiguracionesController(IConfiguration configuration,
-            IOptions<PersonaOpciones> opcionesPersona)
+            IOptionsSnapshot<PersonaOpciones> opcionesPersona)
         {
             this.configuration = configuration;
             _opcionesPersona = opcionesPersona.Value;
