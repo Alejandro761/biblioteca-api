@@ -2,6 +2,7 @@
 using BibliotecaAPI.Datos;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,18 +11,23 @@ namespace BibliotecaAPI.Controllers
 {
     [ApiController]
     [Route("api/autores")]
+    [Authorize]
     public class AutoresController : ControllerBase
     {
         //instancia de ApplicationDbContext para interactuar con la bd
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
 
-        public AutoresController(ApplicationDbContext context, IMapper mapper) {
+        public AutoresController(ApplicationDbContext context, IMapper mapper)
+        {
             this.context = context;
             this.mapper = mapper;
         }
 
         [HttpGet]
+        //AllowAnonymous indica que este endpoint se puede usar
+        // sin estar autenticado
+        [AllowAnonymous]
         public async Task<IEnumerable<AutorDTO>> Get()
         {
             var autores = await context.Autores.ToListAsync();
@@ -69,7 +75,7 @@ namespace BibliotecaAPI.Controllers
             context.Add(autor);
             await context.SaveChangesAsync();
             var autorDTO = mapper.Map<AutorDTO>(autor);
-            return CreatedAtRoute("ObtenerAutor", new {id = autor.Id}, autorDTO);
+            return CreatedAtRoute("ObtenerAutor", new { id = autor.Id }, autorDTO);
         }
 
         [HttpPut("{id:int}")]

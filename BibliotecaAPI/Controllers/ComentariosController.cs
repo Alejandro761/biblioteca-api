@@ -2,6 +2,7 @@
 using BibliotecaAPI.Datos;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,8 @@ namespace BibliotecaAPI.Controllers
 {
     [ApiController]
     [Route("api/libros/{libroId:int}/comentarios")]
-    public class ComentariosController: ControllerBase
+    [Authorize]
+    public class ComentariosController : ControllerBase
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
@@ -22,7 +24,7 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpGet]
-        public async Task <ActionResult<List<ComentarioDTO>>> Get(int libroId)
+        public async Task<ActionResult<List<ComentarioDTO>>> Get(int libroId)
         {
             var existeLibro = await context.Libros.AnyAsync(x => x.Id == libroId);
 
@@ -45,13 +47,13 @@ namespace BibliotecaAPI.Controllers
             var comentario = await context.Comentarios.
                 FirstOrDefaultAsync(x => x.Id == id);
 
-            if (comentario is  null)
+            if (comentario is null)
             {
                 return NotFound();
             }
 
             return mapper.Map<ComentarioDTO>(comentario);
-            
+
         }
 
         [HttpPost]
@@ -125,7 +127,7 @@ namespace BibliotecaAPI.Controllers
             }
 
             var registrosBorrados = await context.Comentarios.Where(x => x.Id == id).ExecuteDeleteAsync();
-            
+
             if (registrosBorrados == 0)
             {
                 NotFound();
