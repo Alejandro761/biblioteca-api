@@ -2,6 +2,7 @@
 using BibliotecaAPI.Datos;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,11 @@ namespace BibliotecaAPI.Controllers
 {
     [ApiController]
     [Route("api/autores-coleccion")]
-    public class AutoresColeccionController: ControllerBase
+    // con authorize indicamos que es necesario 
+    // estar autenticado para acceder a los endpoints 
+    // de este controlador
+    [Authorize]
+    public class AutoresColeccionController : ControllerBase
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
