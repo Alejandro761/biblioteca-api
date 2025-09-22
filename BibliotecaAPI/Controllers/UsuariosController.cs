@@ -17,11 +17,16 @@ namespace BibliotecaAPI.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuration;
+        private readonly SignInManager<IdentityUser> signInManager;
 
-        public UsuariosController(UserManager<IdentityUser> userManager, IConfiguration configuration)
+        public UsuariosController(UserManager<IdentityUser> userManager,
+            IConfiguration configuration,
+            SignInManager<IdentityUser> signInManager
+        )
         {
             this.userManager = userManager;
             this.configuration = configuration;
+            this.signInManager = signInManager;
         }
 
         [HttpPost("registro")]
@@ -54,6 +59,43 @@ namespace BibliotecaAPI.Controllers
             }
         }
 
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public async Task<ActionResult<RespuestaAutenticacionDTO>> Login(CredencialesUsuariosDTO credencialesUsuariosDTO)
+        {
+            var usuario = await userManager.FindByEmailAsync(credencialesUsuariosDTO.Email);
+
+            if (usuario is null)
+            {
+                return RetornarLoginIncorrecto();
+            }
+
+            var resultado = await signInManager.CheckPasswordSignInAsync(
+                usuario,
+                credencialesUsuariosDTO.Password!,
+                //lockoutOnFailure define si se bloquea la cuenta cuando
+                //el usuario se equivoque varias veces con la constraseña
+                lockoutOnFailure: false
+                );
+
+            if (resultado.Succeeded)
+            {
+                return await ConstruirToken(credencialesUsuariosDTO);
+            }
+            else
+            {
+                return RetornarLoginIncorrecto();
+            }
+        }
+
+        private ActionResult RetornarLoginIncorrecto()
+        {
+            //hay que tratar de ser lo mas vagos posibles en el mensaje de error
+            //para que no demos informacion importante de la base de datos
+            ModelState.AddModelError(string.Empty, "Login incorrecto");
+            return ValidationProblem();
+        }
+
         //construccion del json web token
         private async Task<RespuestaAutenticacionDTO> ConstruirToken(CredencialesUsuariosDTO credencialesUsuariosDTO)
         {
@@ -76,7 +118,6 @@ namespace BibliotecaAPI.Controllers
             //agregar los claims de la base de datos a la lista de claims
             claims.AddRange(claimsDB);
 
-            
             //la llave está en un proveedor de configuraciones
             var llave = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(configuration["llavejwt"]!)
