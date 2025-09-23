@@ -27,7 +27,7 @@ namespace BibliotecaAPI.Utilidades
 
             CreateMap<Libro, LibroDTO>();
             CreateMap<LibroCreacionDTO, Libro>()
-                .ForMember(ent => ent.Autores, config => config.MapFrom(dto => dto.AutoresIds.Select(id => new AutorLibro { AutorId = id})));
+                .ForMember(ent => ent.Autores, config => config.MapFrom(dto => dto.AutoresIds.Select(id => new AutorLibro { AutorId = id })));
 
             CreateMap<Libro, LibroConAutoresDTO>();
 
@@ -42,11 +42,16 @@ namespace BibliotecaAPI.Utilidades
             //    ));
 
             CreateMap<LibroCreacionDTO, AutorLibro>()
-                .ForMember(ent => ent.Libro, config => config.MapFrom(dto => new Libro { Titulo = dto.Titulo}));
+                .ForMember(ent => ent.Libro,
+                config => config.MapFrom(dto => new Libro { Titulo = dto.Titulo })
+                );
 
             CreateMap<ComentarioCreacionDTO, Comentario>();
             CreateMap<ComentarioPatchDTO, Comentario>().ReverseMap();
-            CreateMap<Comentario, ComentarioDTO>();
+            CreateMap<Comentario, ComentarioDTO>()
+                .ForMember(dto => dto.UsuarioEmail,
+                    config => config.MapFrom(ent => ent.Usuario!.Email)
+                );
         }
 
         private string MappearNombreYApellidoAutor(Autor autor) => $"{autor.Nombres} {autor.Apellidos}";
