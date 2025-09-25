@@ -1,5 +1,6 @@
 using BibliotecaAPI;
 using BibliotecaAPI.Datos;
+using BibliotecaAPI.Servicios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,8 @@ builder.Services.AddIdentityCore<IdentityUser>()
 builder.Services.AddScoped<UserManager<IdentityUser>>();
 //SignInManager nos permite autenticar usuarios
 builder.Services.AddScoped<SignInManager<IdentityUser>>();
+builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
+
 //nos permite acceder al contexto http desde cualquier clase
 builder.Services.AddHttpContextAccessor();
 
