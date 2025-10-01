@@ -63,6 +63,11 @@ builder.Services.AddAuthentication().AddJwtBearer(opciones =>
     };
 });
 
+builder.Services.AddAuthorization(opciones =>
+{
+    opciones.AddPolicy("esadmin", politica => politica.RequireClaim("esadmin"));
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();

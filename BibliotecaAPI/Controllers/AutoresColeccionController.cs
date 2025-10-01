@@ -13,7 +13,7 @@ namespace BibliotecaAPI.Controllers
     // con authorize indicamos que es necesario 
     // estar autenticado para acceder a los endpoints 
     // de este controlador
-    [Authorize]
+    [Authorize(Policy = "esadmin")]
     public class AutoresColeccionController : ControllerBase
     {
         private readonly ApplicationDbContext context;

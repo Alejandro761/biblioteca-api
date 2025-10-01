@@ -11,7 +11,7 @@ namespace BibliotecaAPI.Controllers
 {
     [ApiController]
     [Route("api/autores")]
-    [Authorize]
+    [Authorize(Policy = "esadmin")]
     public class AutoresController : ControllerBase
     {
         //instancia de ApplicationDbContext para interactuar con la bd
