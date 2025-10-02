@@ -1,5 +1,6 @@
 using BibliotecaAPI;
 using BibliotecaAPI.Datos;
+using BibliotecaAPI.Entidades;
 using BibliotecaAPI.Servicios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -27,15 +28,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(opciones =>
 //identityUser es la clase que representa a un usuario
 //configuramos identity para que use ApplicationDbContext para
 //coenctarse con las tablas de usuarios en la bd
-builder.Services.AddIdentityCore<IdentityUser>()
+builder.Services.AddIdentityCore<Usuario>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
 //UserManager es el manejador de usuarios que nos va a permitir
 //registrar usuarios validar contraseñas, etc
-builder.Services.AddScoped<UserManager<IdentityUser>>();
+builder.Services.AddScoped<UserManager<Usuario>>();
 //SignInManager nos permite autenticar usuarios
-builder.Services.AddScoped<SignInManager<IdentityUser>>();
+builder.Services.AddScoped<SignInManager<Usuario>>();
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
 
 //nos permite acceder al contexto http desde cualquier clase
