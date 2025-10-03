@@ -52,6 +52,8 @@ namespace BibliotecaAPI.Utilidades
                 .ForMember(dto => dto.UsuarioEmail,
                     config => config.MapFrom(ent => ent.Usuario!.Email)
                 );
+
+            CreateMap<Usuario, UsuarioDTO>();
         }
 
         private string MappearNombreYApellidoAutor(Autor autor) => $"{autor.Nombres} {autor.Apellidos}";
