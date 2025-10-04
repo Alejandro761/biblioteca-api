@@ -19,6 +19,9 @@
             });
             const json = await respuesta.text();
             console.log(json);
+
+            const cabecera = Array.from(respuesta.headers.entries());
+            console.log(cabecera);
         }
     </script>
 </body>

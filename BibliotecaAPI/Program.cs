@@ -20,7 +20,7 @@ builder.Services.AddCors(opciones =>
     opciones.AddDefaultPolicy(opcionesCors =>
     {
         //AllowAnyOrigin permite que cualquier origen pueda comunicarse
-        opcionesCors.WithOrigins(origenesPermitidos).AllowAnyMethod().AllowAnyHeader();
+        opcionesCors.WithOrigins(origenesPermitidos).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("mi-cabecera");
     });
 });
 
@@ -85,6 +85,13 @@ builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 // area de middlewares
+
+//insertar una cabecera (header)
+app.Use(async (contexto, next) =>
+{
+    contexto.Response.Headers.Append("mi-cabecera", "valor");
+    await next();
+});
 
 app.UseCors();
 
