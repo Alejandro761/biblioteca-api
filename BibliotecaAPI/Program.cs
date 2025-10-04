@@ -52,6 +52,7 @@ builder.Services.AddScoped<UserManager<Usuario>>();
 //SignInManager nos permite autenticar usuarios
 builder.Services.AddScoped<SignInManager<Usuario>>();
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
+builder.Services.AddTransient<IServicioHash, ServicioHash>();
 
 //nos permite acceder al contexto http desde cualquier clase
 builder.Services.AddHttpContextAccessor();
