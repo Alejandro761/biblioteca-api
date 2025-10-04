@@ -13,6 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Area de servicios
 
+var origenesPermitidos = builder.Configuration.GetSection("origenesPermitidos").Get<string[]>()!;
+
+builder.Services.AddCors(opciones =>
+{
+    opciones.AddDefaultPolicy(opcionesCors =>
+    {
+        //AllowAnyOrigin permite que cualquier origen pueda comunicarse
+        opcionesCors.WithOrigins(origenesPermitidos).AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 builder.Services.AddAutoMapper(typeof(Program));
 
 //modificamos el serealizador de json para ignorar los ciclos en las consultas
@@ -73,9 +84,10 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
+// area de middlewares
+
+app.UseCors();
 
 app.MapControllers();
-
-
 
 app.Run();
