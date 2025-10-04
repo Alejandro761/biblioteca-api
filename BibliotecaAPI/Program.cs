@@ -13,6 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Area de servicios
 
+//configuración minima necesaria para realizar encriptación
+builder.Services.AddDataProtection();
+
 var origenesPermitidos = builder.Configuration.GetSection("origenesPermitidos").Get<string[]>()!;
 
 builder.Services.AddCors(opciones =>
