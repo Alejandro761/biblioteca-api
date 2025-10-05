@@ -85,9 +85,14 @@ builder.Services.AddAuthorization(opciones =>
 
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // area de middlewares
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors();
 
