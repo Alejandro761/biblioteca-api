@@ -52,7 +52,6 @@ builder.Services.AddScoped<UserManager<Usuario>>();
 //SignInManager nos permite autenticar usuarios
 builder.Services.AddScoped<SignInManager<Usuario>>();
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
-builder.Services.AddTransient<IServicioHash, ServicioHash>();
 
 //nos permite acceder al contexto http desde cualquier clase
 builder.Services.AddHttpContextAccessor();
@@ -89,13 +88,6 @@ builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 // area de middlewares
-
-//insertar una cabecera (header)
-app.Use(async (contexto, next) =>
-{
-    contexto.Response.Headers.Append("mi-cabecera", "valor");
-    await next();
-});
 
 app.UseCors();
 
