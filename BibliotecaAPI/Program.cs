@@ -2,6 +2,7 @@ using BibliotecaAPI;
 using BibliotecaAPI.Datos;
 using BibliotecaAPI.Entidades;
 using BibliotecaAPI.Servicios;
+using BibliotecaAPI.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -116,18 +117,19 @@ builder.Services.AddSwaggerGen(opciones =>
         In = ParameterLocation.Header
     });
 
-    opciones.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme {
-                Reference = new OpenApiReference {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new String[]{}
-        }
-    });
+    opciones.OperationFilter<FiltroAutorizacion>();
+    // opciones.AddSecurityRequirement(new OpenApiSecurityRequirement
+    // {
+    //     {
+    //         new OpenApiSecurityScheme {
+    //             Reference = new OpenApiReference {
+    //                 Type = ReferenceType.SecurityScheme,
+    //                 Id = "Bearer"
+    //             }
+    //         },
+    //         new String[]{}
+    //     }
+    // });
 });
 
 var app = builder.Build();
