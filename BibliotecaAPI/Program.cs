@@ -25,7 +25,8 @@ builder.Services.AddCors(opciones =>
     opciones.AddDefaultPolicy(opcionesCors =>
     {
         //AllowAnyOrigin permite que cualquier origen pueda comunicarse
-        opcionesCors.WithOrigins(origenesPermitidos).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("mi-cabecera");
+        // opcionesCors.WithOrigins(origenesPermitidos).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("mi-cabecera");
+        opcionesCors.WithOrigins(origenesPermitidos).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("cantidad-total-registro");
     });
 });
 
