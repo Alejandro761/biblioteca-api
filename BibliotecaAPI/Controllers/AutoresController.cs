@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
+using System.IO.Compression;
 using AutoMapper;
 using BibliotecaAPI.Datos;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
+using BibliotecaAPI.Servicios;
 using BibliotecaAPI.Utilidades;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
@@ -19,11 +21,14 @@ namespace BibliotecaAPI.Controllers
         //instancia de ApplicationDbContext para interactuar con la bd
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly IAlmacenarArchivos almacenarArchivos;
+        private const string contenedor = "autores";
 
-        public AutoresController(ApplicationDbContext context, IMapper mapper)
+        public AutoresController(ApplicationDbContext context, IMapper mapper, IAlmacenarArchivos almacenarArchivos)
         {
             this.context = context;
             this.mapper = mapper;
+            this.almacenarArchivos = almacenarArchivos;
         }
 
         [HttpGet]
@@ -78,9 +83,27 @@ namespace BibliotecaAPI.Controllers
         //}
 
         [HttpPost]
-        public async Task<ActionResult> Post(AutorCreacionDTO autorCracionDTO)
+        public async Task<ActionResult> Post(AutorCreacionDTO autorCreacionDTO)
         {
-            var autor = mapper.Map<Autor>(autorCracionDTO);
+            var autor = mapper.Map<Autor>(autorCreacionDTO);
+            context.Add(autor);
+            await context.SaveChangesAsync();
+            var autorDTO = mapper.Map<AutorDTO>(autor);
+            return CreatedAtRoute("ObtenerAutor", new { id = autor.Id }, autorDTO);
+        }
+
+        [HttpPost("con-foto")]
+        //fromform es cuando obtenemos data del formulario, es util cuando recibimos archivos
+        public async Task<ActionResult> PostConFoto([FromForm] AutorCreacionDTOConFoto autorCreacionDTO)
+        {
+            var autor = mapper.Map<Autor>(autorCreacionDTO);
+
+            if (autorCreacionDTO.Foto is not null)
+            {
+                var url = await almacenarArchivos.Almacenar(contenedor, autorCreacionDTO.Foto);
+                autor.Foto = url;
+            }
+            
             context.Add(autor);
             await context.SaveChangesAsync();
             var autorDTO = mapper.Map<AutorDTO>(autor);
@@ -88,10 +111,25 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Put(int id, AutorCreacionDTO autorCreacionDTO)
+        public async Task<ActionResult> Put(int id, [FromForm] AutorCreacionDTOConFoto autorCreacionDTO)
         {
+            var existeAutor = await context.Autores.AnyAsync(x => x.Id == id);
+
+            if (!existeAutor)
+            {
+                return NotFound();
+            }
+
             var autor = mapper.Map<Autor>(autorCreacionDTO);
             autor.Id = id;
+
+            if (autorCreacionDTO.Foto is not null)
+            {
+                var fotoActual = await context.Autores.Where(x => x.Id == id).Select(x => x.Foto).FirstAsync();
+                var url = await almacenarArchivos.Editar(fotoActual, contenedor, autorCreacionDTO.Foto);
+                autor.Foto = url;
+            }
+            
             context.Update(autor);
             await context.SaveChangesAsync();
             return NoContent();
@@ -132,12 +170,23 @@ namespace BibliotecaAPI.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var registrosBorrados = await context.Autores.Where(x => x.Id == id).ExecuteDeleteAsync();
+            // var registrosBorrados = await context.Autores.Where(x => x.Id == id).ExecuteDeleteAsync();
 
-            if (registrosBorrados == 0)
+            // if (registrosBorrados == 0)
+            // {
+            //     return NotFound();
+            // }
+
+            var autor = await context.Autores.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (autor is null)
             {
                 return NotFound();
             }
+
+            context.Remove(autor);
+            await context.SaveChangesAsync();
+            await almacenarArchivos.Borrar(autor.Foto, contenedor);
 
             return NoContent();
         }
