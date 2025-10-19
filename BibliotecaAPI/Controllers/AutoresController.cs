@@ -22,13 +22,15 @@ namespace BibliotecaAPI.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly IAlmacenarArchivos almacenarArchivos;
+        private readonly ILogger<AutoresController> logger;
         private const string contenedor = "autores";
 
-        public AutoresController(ApplicationDbContext context, IMapper mapper, IAlmacenarArchivos almacenarArchivos)
+        public AutoresController(ApplicationDbContext context, IMapper mapper, IAlmacenarArchivos almacenarArchivos, ILogger<AutoresController> logger)
         {
             this.context = context;
             this.mapper = mapper;
             this.almacenarArchivos = almacenarArchivos;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -64,6 +66,75 @@ namespace BibliotecaAPI.Controllers
 
             var autorDTO = mapper.Map<AutorConLibrosDTO>(autor);
             return autorDTO;
+        }
+
+        [HttpGet("filtrar")]
+        [AllowAnonymous]
+        public async Task<ActionResult> Filtrar([FromQuery] AutorFiltroDTO autorFiltroDTO)
+        {
+            var queryable = context.Autores.AsQueryable();
+
+            if (!string.IsNullOrEmpty(autorFiltroDTO.Nombres))
+            {
+                queryable = queryable.Where(x => x.Nombres.Contains(autorFiltroDTO.Nombres));
+            }
+
+            if (!string.IsNullOrEmpty(autorFiltroDTO.Apellidos))
+            {
+                queryable = queryable.Where(x => x.Apellidos.Contains(autorFiltroDTO.Apellidos));
+            }
+
+            if (autorFiltroDTO.IncluirLibros)
+            {
+                queryable = queryable.Include(x => x.Libros).ThenInclude(x => x.Libro);
+            }
+
+            if (autorFiltroDTO.TieneFoto.HasValue)
+            {
+                if (autorFiltroDTO.TieneFoto.Value)
+                {
+                    queryable = queryable.Where(x => x.Foto != null);
+                }
+                else
+                {
+                    queryable = queryable.Where(x => x.Foto == null);
+                }
+            }
+
+            if (autorFiltroDTO.TieneLibros.HasValue)
+            {
+                if (autorFiltroDTO.TieneLibros.Value)
+                {
+                    //autores que tengan al menos un libro
+                    queryable = queryable.Where(x => x.Libros.Any());
+                }
+                else
+                {
+                    //autores que no tengan libros
+                    queryable = queryable.Where(x => !x.Libros.Any());
+                }
+            }
+            
+            if (!string.IsNullOrEmpty(autorFiltroDTO.TituloLibro))
+            {
+                queryable = queryable.Where(x => x.Libros
+                    .Any(y => y.Libro!.Titulo.Contains(autorFiltroDTO.TituloLibro))
+                );
+            }
+
+            var autores = await queryable.OrderBy(x => x.Nombres)
+                .Paginar(autorFiltroDTO.PaginacionDTO)
+                .ToListAsync();
+
+            if (autorFiltroDTO.IncluirLibros)
+            {
+                var autoresDTO = mapper.Map<IEnumerable<AutorConLibrosDTO>>(autores);
+                return Ok(autoresDTO);
+            } else
+            {
+                var autoresDTO = mapper.Map<IEnumerable<AutorDTO>>(autores);
+                return Ok(autoresDTO);
+            }
         }
 
         //para indicar que un parametro sea string pero que solo se puedan usar letras (no numeros ni simbolos) entonces usamos alpha, en caso contrario no indicamos el tipo

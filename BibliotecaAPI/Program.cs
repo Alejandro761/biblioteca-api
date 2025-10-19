@@ -54,7 +54,9 @@ builder.Services.AddIdentityCore<Usuario>()
 builder.Services.AddScoped<UserManager<Usuario>>();
 //SignInManager nos permite autenticar usuarios
 builder.Services.AddScoped<SignInManager<Usuario>>();
+//addtransient si no se necesita manejar estados
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
+builder.Services.AddTransient<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
 
 //nos permite acceder al contexto http desde cualquier clase
 builder.Services.AddHttpContextAccessor();
