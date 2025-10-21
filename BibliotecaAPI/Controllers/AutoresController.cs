@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 
 namespace BibliotecaAPI.Controllers
 {
@@ -114,15 +115,34 @@ namespace BibliotecaAPI.Controllers
                     queryable = queryable.Where(x => !x.Libros.Any());
                 }
             }
-            
+
             if (!string.IsNullOrEmpty(autorFiltroDTO.TituloLibro))
             {
                 queryable = queryable.Where(x => x.Libros
                     .Any(y => y.Libro!.Titulo.Contains(autorFiltroDTO.TituloLibro))
                 );
             }
+            
+            if (!string.IsNullOrEmpty(autorFiltroDTO.CampoOrdenar))
+            {
+                var tipoOrden = autorFiltroDTO.OrdenAscendente ? "ascending" : "descending";
 
-            var autores = await queryable.OrderBy(x => x.Nombres)
+                try
+                {
+                    queryable = queryable.OrderBy($"{autorFiltroDTO.CampoOrdenar} {tipoOrden}");
+                }
+                catch (Exception ex)
+                {
+                    queryable = queryable.OrderBy(x => x.Nombres);
+                    logger.LogError(ex.Message, ex);
+                }
+            } else
+            {
+                // por defecto que ordene por nombres
+                queryable = queryable.OrderBy(x => x.Nombres);
+            }
+
+            var autores = await queryable
                 .Paginar(autorFiltroDTO.PaginacionDTO)
                 .ToListAsync();
 
