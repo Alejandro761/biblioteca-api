@@ -9,6 +9,14 @@ namespace BibliotecaAPI.Datos
         public ApplicationDbContext(DbContextOptions opciones) : base(opciones)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            //filtro para mostrar aquellos comentarios que no han sido borrados
+            modelBuilder.Entity<Comentario>().HasQueryFilter(b => !b.EstaBorrado);
+        }
         //con DbSet indicamos que se cree una tabla en la bd a partir de la clase Autor
         //la tabla se llamara Autores
         public DbSet<Autor> Autores { get; set; }
