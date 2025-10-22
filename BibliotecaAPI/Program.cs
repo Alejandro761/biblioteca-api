@@ -15,6 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Area de servicios
 
+builder.Services.AddOutputCache(opciones =>
+{
+    opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(15);
+});
+
 //configuración minima necesaria para realizar encriptación
 builder.Services.AddDataProtection();
 
@@ -139,10 +144,13 @@ var app = builder.Build();
 
 // area de middlewares
 
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors();
+
+app.UseOutputCache();
 
 app.MapControllers();
 

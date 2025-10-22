@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace BibliotecaAPI.Controllers
 {
@@ -38,6 +39,7 @@ namespace BibliotecaAPI.Controllers
         //AllowAnonymous indica que este endpoint se puede usar
         // sin estar autenticado
         [AllowAnonymous]
+        [OutputCache]
         public async Task<IEnumerable<AutorDTO>> Get([FromQuery] PaginacionDTO paginacionDTO)
         {
             var queryable = context.Autores.AsQueryable();
@@ -53,6 +55,7 @@ namespace BibliotecaAPI.Controllers
         [EndpointDescription("Obtiene autor por su Id. Incluye sus libros. Si el autor no existe, se retorna 404.")]
         [ProducesResponseType<AutorConLibrosDTO>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [OutputCache]
         public async Task<ActionResult<AutorConLibrosDTO>> Get([Description("El id del autor")] int id, [FromQuery] bool incluirLibros)
         {
             var autor = await context.Autores
