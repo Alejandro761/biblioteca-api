@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOutputCache(opciones =>
 {
-    opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(15);
+    opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60);
 });
 
 //configuración minima necesaria para realizar encriptación
