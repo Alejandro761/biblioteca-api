@@ -48,7 +48,11 @@ builder.Services.AddAutoMapper(typeof(Program));
 // builder.Services.AddControllers().AddJsonOptions(opciones => opciones.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 //al usar dtos ya no es necesario el serializados de json para los ciclos en consultas
 
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers(opciones =>
+{
+    //agregar un filtro global
+    opciones.Filters.Add<FiltroTiempoEjecucion>();
+}).AddNewtonsoftJson();
 
 //configuramos ApplicationDbContext como un servicio
 builder.Services.AddDbContext<ApplicationDbContext>(opciones => 
@@ -70,6 +74,7 @@ builder.Services.AddScoped<SignInManager<Usuario>>();
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
 builder.Services.AddTransient<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
 builder.Services.AddScoped<MiFIltroDeAccion>();
+
 
 //nos permite acceder al contexto http desde cualquier clase
 builder.Services.AddHttpContextAccessor();
