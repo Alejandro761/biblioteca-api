@@ -41,10 +41,10 @@ namespace BibliotecaAPI.Controllers
         }
 
         [HttpGet]
-        //AllowAnonymous indica que este endpoint se puede usar
-        // sin estar autenticado
+        //AllowAnonymous indica que este endpoint se puede usar sin estar autenticado
         [AllowAnonymous]
         [OutputCache(Tags = [cache])]
+        [ServiceFilter<MiFIltroDeAccion>()]
         public async Task<IEnumerable<AutorDTO>> Get([FromQuery] PaginacionDTO paginacionDTO)
         {
             var queryable = context.Autores.AsQueryable();

@@ -3,8 +3,10 @@ using BibliotecaAPI.Datos;
 using BibliotecaAPI.Entidades;
 using BibliotecaAPI.Servicios;
 using BibliotecaAPI.Swagger;
+using BibliotecaAPI.Utilidades;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -67,6 +69,7 @@ builder.Services.AddScoped<SignInManager<Usuario>>();
 //addtransient si no se necesita manejar estados
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
 builder.Services.AddTransient<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
+builder.Services.AddScoped<MiFIltroDeAccion>();
 
 //nos permite acceder al contexto http desde cualquier clase
 builder.Services.AddHttpContextAccessor();
