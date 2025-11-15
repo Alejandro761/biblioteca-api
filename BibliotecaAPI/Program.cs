@@ -74,6 +74,7 @@ builder.Services.AddScoped<SignInManager<Usuario>>();
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
 builder.Services.AddTransient<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
 builder.Services.AddScoped<MiFIltroDeAccion>();
+builder.Services.AddScoped<FiltroValidaciónLibro>();
 
 
 //nos permite acceder al contexto http desde cualquier clase
