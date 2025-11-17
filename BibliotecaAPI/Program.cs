@@ -5,6 +5,7 @@ using BibliotecaAPI.Servicios;
 using BibliotecaAPI.Swagger;
 using BibliotecaAPI.Utilidades;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -158,6 +159,29 @@ var app = builder.Build();
 
 // area de middlewares
 
+// manejo de errores
+app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async context =>
+{
+    var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+    var excepcion = exceptionHandlerFeature?.Error!;
+
+    var error = new Error()
+    {
+        MensajeError = excepcion.Message,
+        StrackTrace = excepcion.StackTrace,
+        Fecha = DateTime.UtcNow
+    };
+
+    var dbContext = context.RequestServices.GetRequiredService<ApplicationDbContext>();
+    dbContext.Add(error);
+    await dbContext.SaveChangesAsync();
+    await Results.InternalServerError(new
+    {
+        tipo = "error",
+        mensaje = "Ha ocurrido un error inesperado",
+        estatus = 500
+    }).ExecuteAsync(context);
+}));
 
 app.UseSwagger();
 app.UseSwaggerUI();
