@@ -13,10 +13,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BibliotecaAPI.Controllers
+namespace BibliotecaAPI.Controllers.V1
 {
     [ApiController]
-    [Route("api/usuarios")]
+    [Route("api/v1/usuarios")]
     public class UsuariosController : ControllerBase
     {
         private readonly UserManager<Usuario> userManager;

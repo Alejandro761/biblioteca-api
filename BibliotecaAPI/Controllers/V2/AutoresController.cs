@@ -13,10 +13,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.OutputCaching;
 
-namespace BibliotecaAPI.Controllers
+namespace BibliotecaAPI.Controllers.V2
 {
     [ApiController]
-    [Route("api/autores")]
+    [Route("api/v2/autores")]
     [Authorize(Policy = "esadmin")]
     [FiltroAgregarCabeceras("controlador", "autores")]
     public class AutoresController : ControllerBase
@@ -56,19 +56,24 @@ namespace BibliotecaAPI.Controllers
             return autoresDTO;
         }
 
-        [HttpGet("{id:int}", Name = "ObtenerAutor")] // api/autores/id?incluirLibros=true|false
+        [HttpGet("{id:int}", Name = "ObtenerAutorV2")] // api/autores/id?incluirLibros=true|false
         [AllowAnonymous]
         [EndpointSummary("Obtiene autor por Id")]
         [EndpointDescription("Obtiene autor por su Id. Incluye sus libros. Si el autor no existe, se retorna 404.")]
         [ProducesResponseType<AutorConLibrosDTO>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [OutputCache(Tags = [cache])]
-        public async Task<ActionResult<AutorConLibrosDTO>> Get([Description("El id del autor")] int id, [FromQuery] bool incluirLibros)
+        public async Task<ActionResult<AutorConLibrosDTO>> Get([Description("El id del autor")] int id, [FromQuery] bool incluirLibros = false)
         {
-            var autor = await context.Autores
-                .Include(x => x.Libros)
-                .ThenInclude(x => x.Libro)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            var queryable = context.Autores.AsQueryable();
+
+            if (incluirLibros)
+            {
+                queryable = queryable.Include(x => x.Libros)
+                    .ThenInclude(x => x.Libro);
+            }
+            
+            var autor = await queryable.FirstOrDefaultAsync(x => x.Id == id);
 
             if (autor is null)
             {
@@ -191,7 +196,7 @@ namespace BibliotecaAPI.Controllers
             await context.SaveChangesAsync();
             await outputCacheStore.EvictByTagAsync(cache, default); //limpiar cache
             var autorDTO = mapper.Map<AutorDTO>(autor);
-            return CreatedAtRoute("ObtenerAutor", new { id = autor.Id }, autorDTO);
+            return CreatedAtRoute("ObtenerAutorV2", new { id = autor.Id }, autorDTO);
         }
 
         [HttpPost("con-foto")]
@@ -210,7 +215,7 @@ namespace BibliotecaAPI.Controllers
             await context.SaveChangesAsync();
             await outputCacheStore.EvictByTagAsync(cache, default);
             var autorDTO = mapper.Map<AutorDTO>(autor);
-            return CreatedAtRoute("ObtenerAutor", new { id = autor.Id }, autorDTO);
+            return CreatedAtRoute("ObtenerAutorV2", new { id = autor.Id }, autorDTO);
         }
 
         [HttpPut("{id:int}")]
