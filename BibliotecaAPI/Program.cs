@@ -74,8 +74,10 @@ builder.Services.AddScoped<SignInManager<Usuario>>();
 //addtransient si no se necesita manejar estados
 builder.Services.AddTransient<IServiciosUsuarios, ServiciosUsuarios>();
 builder.Services.AddTransient<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
+// addScoped porque se recomienda que como dependemos de dbContext utilicemos scoped
 builder.Services.AddScoped<MiFIltroDeAccion>();
 builder.Services.AddScoped<FiltroValidaciónLibro>();
+builder.Services.AddScoped<BibliotecaAPI.Servicios.V1.IServicioAutores, BibliotecaAPI.Servicios.V1.ServicioAutores>();
 
 
 //nos permite acceder al contexto http desde cualquier clase
