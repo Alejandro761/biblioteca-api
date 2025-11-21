@@ -53,6 +53,8 @@ builder.Services.AddControllers(opciones =>
 {
     //agregar un filtro global
     opciones.Filters.Add<FiltroTiempoEjecucion>();
+    // agregar la conveción para agrupar los controladores por versión
+    opciones.Conventions.Add(new ConvencionAgrupaPorVersion());
 }).AddNewtonsoftJson();
 
 //configuramos ApplicationDbContext como un servicio
@@ -110,12 +112,31 @@ builder.Services.AddAuthorization(opciones =>
     opciones.AddPolicy("esadmin", politica => politica.RequireClaim("esadmin"));
 });
 
-builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(opciones =>
 {
     opciones.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
+        Version = "v1",
+        Title = "Biblioteca API",
+        Description = "Esta es una API para trabajar con datos de autores y libros",
+        Contact = new OpenApiContact
+        {
+            Email = "alejandroxd62@gmail.com",
+            Name = "Alejandro Castañeda",
+            Url = new Uri("https://github.com/Alejandro761")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "MIT",
+            Url = new Uri("https://opensource.org/license/mit/")
+        }
+    });
+    
+    opciones.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v2",
         Title = "Biblioteca API",
         Description = "Esta es una API para trabajar con datos de autores y libros",
         Contact = new OpenApiContact
@@ -186,7 +207,12 @@ app.UseExceptionHandler(exceptionHandlerApp => exceptionHandlerApp.Run(async con
 }));
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(opciones =>
+{
+    //para que swagger divida los endpoints por versiones
+    opciones.SwaggerEndpoint("/swagger/v1/swagger.json", "Biblioteca API V1");
+    opciones.SwaggerEndpoint("/swagger/v2/swagger.json", "Biblioteca API V2");
+});
 
 app.UseCors();
 
