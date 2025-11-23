@@ -31,7 +31,7 @@ namespace BibliotecaAPI.Controllers.V1
             this.outputCacheStore = outputCacheStore;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "ObtenerLibrosV1")]
         [AllowAnonymous]
         [OutputCache(Tags = [cache])]
         public async Task<IEnumerable<LibroDTO>> Get([FromQuery] PaginacionDTO paginacionDTO)
