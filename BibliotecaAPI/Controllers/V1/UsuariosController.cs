@@ -108,7 +108,7 @@ namespace BibliotecaAPI.Controllers.V1
             }
         }
 
-        [HttpPut]
+        [HttpPut(Name = "ActualizarUsuarioV1")]
         [Authorize]
         public async Task<ActionResult> Put(ActualizarUsuarioDTO actualizarUsuarioDTO)
         {
@@ -125,7 +125,7 @@ namespace BibliotecaAPI.Controllers.V1
             return NoContent();
         }
 
-        [HttpGet("renovar-token")]
+        [HttpGet("renovar-token", Name = "RenovarTokenV1")]
         [Authorize]
         public async Task<ActionResult<RespuestaAutenticacionDTO>> RenovarToken()
         {
