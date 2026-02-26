@@ -50,9 +50,54 @@ namespace BibliotecaAPI.Controllers.V1
         [OutputCache(Tags = [cache])]
         [ServiceFilter<MiFIltroDeAccion>()]
         [FiltroAgregarCabeceras("accion", "obtener-autores")]
-        public async Task<IEnumerable<AutorDTO>> Get([FromQuery] PaginacionDTO paginacionDTO)
+        public async Task<ActionResult> Get([FromQuery] PaginacionDTO paginacionDTO, [FromQuery] bool incluirHAREOAS = false)
         {
-            return await servicioAutores.Get(paginacionDTO);
+            var dtos = await servicioAutores.Get(paginacionDTO);
+
+            if (incluirHAREOAS)
+            {
+                foreach (var dto in dtos)
+                {
+                    GenerarEnlaces(dto);
+
+                    // dto.Enlaces.Add(
+                    //     new DatosHATEOASDTO(
+                    //         Enlace: Url.Link("ObtenerAutoresV1", new {})!,
+                    //         Descripcion: "self",
+                    //         Metodo: "GET"
+                    //     )
+                    // );
+                }
+
+                var resultado = new ColeccionDeRecursosDTO<AutorDTO> {Valores = dtos};
+
+                resultado.Enlaces.Add(
+                    new DatosHATEOASDTO(
+                        Enlace: Url.Link("ObtenerAutoresV1", new {})!,
+                        Descripcion: "self",
+                        Metodo: "GET"
+                    )
+                );
+                
+                resultado.Enlaces.Add(
+                    new DatosHATEOASDTO(
+                        Enlace: Url.Link("CrearAutorV1", new {})!,
+                        Descripcion: "crear-autor",
+                        Metodo: "POST"
+                    )
+                );
+                
+                resultado.Enlaces.Add(
+                    new DatosHATEOASDTO(
+                        Enlace: Url.Link("CrearAutorConFotoV1", new {})!,
+                        Descripcion: "crear-autor-con-foto",
+                        Metodo: "POST"
+                    )
+                );
+                return Ok(resultado);
+            }
+            
+            return Ok(dtos);
         }
 
         [HttpGet("{id:int}", Name = "ObtenerAutorV1")] // api/autores/id?incluirLibros=true|false
