@@ -4,6 +4,7 @@ using BibliotecaAPI.Entidades;
 using BibliotecaAPI.Servicios;
 using BibliotecaAPI.Swagger;
 using BibliotecaAPI.Utilidades;
+using BibliotecaAPI.Utilidades.V1;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
@@ -80,6 +81,10 @@ builder.Services.AddTransient<IAlmacenarArchivos, AlmacenadorArchivosAzure>();
 builder.Services.AddScoped<MiFIltroDeAccion>();
 builder.Services.AddScoped<FiltroValidaciónLibro>();
 builder.Services.AddScoped<BibliotecaAPI.Servicios.V1.IServicioAutores, BibliotecaAPI.Servicios.V1.ServicioAutores>();
+
+builder.Services.AddScoped<BibliotecaAPI.Servicios.V1.IGeneradorEnlaces, BibliotecaAPI.Servicios.V1.GeneradorEnlaces>();
+
+builder.Services.AddScoped<HATEOASAutorAttribute>();
 
 
 //nos permite acceder al contexto http desde cualquier clase

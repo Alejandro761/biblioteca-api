@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.OutputCaching;
 using BibliotecaAPI.Servicios.V1;
+using BibliotecaAPI.Utilidades.V1;
 
 namespace BibliotecaAPI.Controllers.V1
 {
@@ -50,24 +51,24 @@ namespace BibliotecaAPI.Controllers.V1
         [OutputCache(Tags = [cache])]
         [ServiceFilter<MiFIltroDeAccion>()]
         [FiltroAgregarCabeceras("accion", "obtener-autores")]
-        public async Task<ActionResult> Get([FromQuery] PaginacionDTO paginacionDTO, [FromQuery] bool incluirHAREOAS = false)
+        public async Task<ActionResult> Get([FromQuery] PaginacionDTO paginacionDTO, [FromQuery] bool incluirHATEOAS = false)
         {
             var dtos = await servicioAutores.Get(paginacionDTO);
 
-            if (incluirHAREOAS)
+            if (incluirHATEOAS)
             {
-                foreach (var dto in dtos)
-                {
-                    GenerarEnlaces(dto);
+                // foreach (var dto in dtos)
+                // {
+                //     GenerarEnlaces(dto);
 
-                    // dto.Enlaces.Add(
-                    //     new DatosHATEOASDTO(
-                    //         Enlace: Url.Link("ObtenerAutoresV1", new {})!,
-                    //         Descripcion: "self",
-                    //         Metodo: "GET"
-                    //     )
-                    // );
-                }
+                //     // dto.Enlaces.Add(
+                //     //     new DatosHATEOASDTO(
+                //     //         Enlace: Url.Link("ObtenerAutoresV1", new {})!,
+                //     //         Descripcion: "self",
+                //     //         Metodo: "GET"
+                //     //     )
+                //     // );
+                // }
 
                 var resultado = new ColeccionDeRecursosDTO<AutorDTO> {Valores = dtos};
 
@@ -106,7 +107,8 @@ namespace BibliotecaAPI.Controllers.V1
         [EndpointDescription("Obtiene autor por su Id. Incluye sus libros. Si el autor no existe, se retorna 404.")]
         [ProducesResponseType<AutorConLibrosDTO>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [OutputCache(Tags = [cache])]
+        // [OutputCache(Tags = [cache])]
+        [ServiceFilter<HATEOASAutorAttribute>()]
         public async Task<ActionResult<AutorConLibrosDTO>> Get([Description("El id del autor")] int id)
         {
             var autor = await context.Autores
@@ -121,44 +123,10 @@ namespace BibliotecaAPI.Controllers.V1
 
             var autorDTO = mapper.Map<AutorConLibrosDTO>(autor);
 
-            GenerarEnlaces(autorDTO);
+            // GenerarEnlaces(autorDTO);
+            logger.LogInformation("Antes de retornar el json");
             
             return autorDTO;
-        }
-
-        private void GenerarEnlaces(AutorDTO autorDTO)
-        {
-            autorDTO.Enlaces.Add(
-                new DatosHATEOASDTO(
-                    Enlace: Url.Link("ObtenerAutorV1", new {id = autorDTO.Id})!,
-                    Descripcion: "self",
-                    Metodo: "GET"
-                )
-            );
-
-            autorDTO.Enlaces.Add(
-                new DatosHATEOASDTO(
-                    Enlace: Url.Link("ActualizarAutorV1", new {id = autorDTO.Id})!,
-                    Descripcion: "actualizar-autor",
-                    Metodo: "PUT"
-                )
-            );
-
-            autorDTO.Enlaces.Add(
-                new DatosHATEOASDTO(
-                    Enlace: Url.Link("PatchAutorV1", new {id = autorDTO.Id})!,
-                    Descripcion: "patch-autor",
-                    Metodo: "PATCH"
-                )
-            );
-
-            autorDTO.Enlaces.Add(
-                new DatosHATEOASDTO(
-                    Enlace: Url.Link("BorrarAutorV1", new {id = autorDTO.Id})!,
-                    Descripcion: "borrar-autor",
-                    Metodo: "DELETE"
-                )
-            );
         }
 
         [HttpGet("filtrar", Name = "FiltrarAutoresV1")]
