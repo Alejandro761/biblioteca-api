@@ -54,3 +54,4 @@ TestResult.xml
 nunit-*.xml
 
 .vs/
+/BibliotecaAPI/appsettings.Development.json
