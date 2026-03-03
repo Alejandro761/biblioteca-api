@@ -48,57 +48,13 @@ namespace BibliotecaAPI.Controllers.V1
         [HttpGet(Name = "ObtenerAutoresV1")]
         //AllowAnonymous indica que este endpoint se puede usar sin estar autenticado
         [AllowAnonymous]
-        [OutputCache(Tags = [cache])]
+        // [OutputCache(Tags = [cache])]
         [ServiceFilter<MiFIltroDeAccion>()]
         [FiltroAgregarCabeceras("accion", "obtener-autores")]
-        public async Task<ActionResult> Get([FromQuery] PaginacionDTO paginacionDTO, [FromQuery] bool incluirHATEOAS = false)
+        [ServiceFilter<HATEOASAutoresAttribute>]
+        public async Task<IEnumerable<AutorDTO>> Get([FromQuery] PaginacionDTO paginacionDTO)
         {
-            var dtos = await servicioAutores.Get(paginacionDTO);
-
-            if (incluirHATEOAS)
-            {
-                // foreach (var dto in dtos)
-                // {
-                //     GenerarEnlaces(dto);
-
-                //     // dto.Enlaces.Add(
-                //     //     new DatosHATEOASDTO(
-                //     //         Enlace: Url.Link("ObtenerAutoresV1", new {})!,
-                //     //         Descripcion: "self",
-                //     //         Metodo: "GET"
-                //     //     )
-                //     // );
-                // }
-
-                var resultado = new ColeccionDeRecursosDTO<AutorDTO> {Valores = dtos};
-
-                resultado.Enlaces.Add(
-                    new DatosHATEOASDTO(
-                        Enlace: Url.Link("ObtenerAutoresV1", new {})!,
-                        Descripcion: "self",
-                        Metodo: "GET"
-                    )
-                );
-                
-                resultado.Enlaces.Add(
-                    new DatosHATEOASDTO(
-                        Enlace: Url.Link("CrearAutorV1", new {})!,
-                        Descripcion: "crear-autor",
-                        Metodo: "POST"
-                    )
-                );
-                
-                resultado.Enlaces.Add(
-                    new DatosHATEOASDTO(
-                        Enlace: Url.Link("CrearAutorConFotoV1", new {})!,
-                        Descripcion: "crear-autor-con-foto",
-                        Metodo: "POST"
-                    )
-                );
-                return Ok(resultado);
-            }
-            
-            return Ok(dtos);
+            return await servicioAutores.Get(paginacionDTO);
         }
 
         [HttpGet("{id:int}", Name = "ObtenerAutorV1")] // api/autores/id?incluirLibros=true|false
