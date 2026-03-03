@@ -12,11 +12,15 @@ namespace BibliotecaAPITests.PruebasUnitarias.Validaciones
     public class PrimeraLetraMayusculaAttributePruebas
     {
         [TestMethod]
-        public void IsValid_RetornaExitoso_SiValueEsVacio() {
+        [DataRow(" ")]
+        [DataRow("     ")]
+        [DataRow("")]
+        [DataRow(null)]
+        public void IsValid_RetornaExitoso_SiValueEsVacioONulo(string value) {
             //Preparacion
             var primeraLetraMayusculaAttribute = new PrimeraLetraMayusculaAttribute();
             var validationContext = new ValidationContext(new object());
-            var value = string.Empty;
+            //var value = string.Empty;
 
             //Prueba
             var resultado = primeraLetraMayusculaAttribute.GetValidationResult(value, validationContext);
