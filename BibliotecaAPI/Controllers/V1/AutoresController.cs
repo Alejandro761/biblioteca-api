@@ -80,7 +80,7 @@ namespace BibliotecaAPI.Controllers.V1
             var autorDTO = mapper.Map<AutorConLibrosDTO>(autor);
 
             // GenerarEnlaces(autorDTO);
-            logger.LogInformation("Antes de retornar el json");
+            // logger.LogInformation("Antes de retornar el json");
             
             return autorDTO;
         }

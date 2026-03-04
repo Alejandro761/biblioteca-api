@@ -19,15 +19,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Area de servicios
 
-// builder.Services.AddOutputCache(opciones =>
-// {
-//     opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60);
-// });
-
-builder.Services.AddStackExchangeRedisOutputCache(opciones =>
+builder.Services.AddOutputCache(opciones =>
 {
-    opciones.Configuration = builder.Configuration.GetConnectionString("redis");
+    opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60);
 });
+
+// builder.Services.AddStackExchangeRedisOutputCache(opciones =>
+// {
+//     opciones.Configuration = builder.Configuration.GetConnectionString("redis");
+// });
 
 //configuración minima necesaria para realizar encriptación
 builder.Services.AddDataProtection();
