@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 
 namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
 {
@@ -76,6 +77,33 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
         }
 
         [TestMethod]
+        public async Task Get_DebeLlamarGetDelServicioAutores()
+        {
+            // Prepación
+            var nombreBD = Guid.NewGuid().ToString();
+            var context = ConstruirContext(nombreBD);
+            var mapper = ConfigurarAutoMapper();
+            IAlmacenarArchivos almacenarArchivos = null!;
+            ILogger<AutoresController> logger = null!;
+            //creamos un doble para suplantar el outputCacheStore
+            IOutputCacheStore outputCacheStore = null!;
+            // La libreria NSubstitute permite probar servicios, haciendo un doble de la interface que incluye funcionalidades como que si fue llamado una o contadas veces, si se le mando paginación DTO, etc
+            IServicioAutores servicioAutores = Substitute.For<IServicioAutores>();
+
+            var controller = new AutoresController(context, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
+
+            var paginacionDTO = new PaginacionDTO(2, 3);
+            
+            //Prueba
+            await controller.Get(paginacionDTO);
+
+            // Verificación
+            // se espera que el metodo Get de ServiciosAutores sea llamado 1 vez mandando paginacionDTO
+            await servicioAutores.Received(1).Get(paginacionDTO);
+
+        }
+
+        [TestMethod]
         public async Task Post_DebeCrearAutor_CuandoEnviamosAutor()
         {
             // Preparación
@@ -84,6 +112,7 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
             var mapper = ConfigurarAutoMapper();
             IAlmacenarArchivos almacenarArchivos = null!;
             ILogger<AutoresController> logger = null!;
+            //creamos un doble para suplantar el outputCacheStore
             IOutputCacheStore outputCacheStore = new OutputCacheStoreFalso();
             IServicioAutores servicioAutores = null!;
 
