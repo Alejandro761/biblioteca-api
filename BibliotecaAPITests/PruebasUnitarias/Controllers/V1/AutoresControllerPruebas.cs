@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using BibliotecaAPI.Controllers.V1;
+using BibliotecaAPI.Datos;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
 using BibliotecaAPI.Servicios;
@@ -21,20 +23,33 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
     [TestClass]
     public class AutoresControllerPruebas: BasePruebas
     {
+        IAlmacenarArchivos almacenarArchivos = null!;
+        ILogger<AutoresController> logger = null!;
+        IOutputCacheStore outputCacheStore = null!;
+        IServicioAutores servicioAutores = null!;
+        private string nombreBD = Guid.NewGuid().ToString();
+        private AutoresController controller = null!;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            //Preparación
+
+            var context = ConstruirContext(nombreBD);
+            var mapper = ConfigurarAutoMapper();
+            // La libreria NSubstitute permite probar servicios, haciendo un doble de la interface que incluye funcionalidades como que si fue llamado una o contadas veces, si se le mando paginación DTO, etc
+            almacenarArchivos = Substitute.For<IAlmacenarArchivos>();
+            logger = Substitute.For<ILogger<AutoresController>>();
+            outputCacheStore = Substitute.For<IOutputCacheStore>();
+            servicioAutores = Substitute.For<IServicioAutores>();
+
+            controller = new AutoresController(context, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
+
+        }
+
         [TestMethod]
         public async Task Get_Retorna404_CuandoAutorConIdNoExiste()
         {
-            //Preparación
-            var nombreBD = Guid.NewGuid().ToString();
-            var context = ConstruirContext(nombreBD);
-            var mapper = ConfigurarAutoMapper();
-            IAlmacenarArchivos almacenarArchivos = null!;
-            ILogger<AutoresController> logger = null!;
-            IOutputCacheStore outputCacheStore = null!;
-            IServicioAutores servicioAutores = null!;
-
-            var controller = new AutoresController(context, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
-
             //Prueba
             var respuesta = await controller.Get(1);
 
@@ -48,13 +63,7 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
         public async Task Get_RetornaAutor_CuandoAutorConIdExiste()
         {
             //Preparación
-            var nombreBD = Guid.NewGuid().ToString();
             var context = ConstruirContext(nombreBD);
-            var mapper = ConfigurarAutoMapper();
-            IAlmacenarArchivos almacenarArchivos = null!;
-            ILogger<AutoresController> logger = null!;
-            IOutputCacheStore outputCacheStore = null!;
-            IServicioAutores servicioAutores = null!;
 
             context.Autores.Add(new Autor {Nombres = "Ale", Apellidos = "Castañeda"});
             context.Autores.Add(new Autor {Nombres = "Elías", Apellidos = "Ibarra"});
@@ -62,10 +71,6 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
             await context.SaveChangesAsync();
 
             //no es recomendable usar el mismo contexto con el que creamos los autores
-
-            var context2 = ConstruirContext(nombreBD);
-
-            var controller = new AutoresController(context2, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
 
             //Prueba
             var respuesta = await controller.Get(1);
@@ -80,13 +85,7 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
         public async Task Get_RetornaAutorConLibros_CuandoAutorTieneLibros()
         {
             //Preparación
-            var nombreBD = Guid.NewGuid().ToString();
             var context = ConstruirContext(nombreBD);
-            var mapper = ConfigurarAutoMapper();
-            IAlmacenarArchivos almacenarArchivos = null!;
-            ILogger<AutoresController> logger = null!;
-            IOutputCacheStore outputCacheStore = null!;
-            IServicioAutores servicioAutores = null!;
 
             var libro1 = new Libro {Titulo = "Libro1"};
             var libro2 = new Libro {Titulo = "Libro2"};
@@ -101,16 +100,11 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
                 }
             };
 
-
             context.Add(autor);
 
             await context.SaveChangesAsync();
 
             //no es recomendable usar el mismo contexto con el que creamos los autores
-
-            var context2 = ConstruirContext(nombreBD);
-
-            var controller = new AutoresController(context2, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
 
             //Prueba
             var respuesta = await controller.Get(1);
@@ -126,18 +120,6 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
         public async Task Get_DebeLlamarGetDelServicioAutores()
         {
             // Prepación
-            var nombreBD = Guid.NewGuid().ToString();
-            var context = ConstruirContext(nombreBD);
-            var mapper = ConfigurarAutoMapper();
-            IAlmacenarArchivos almacenarArchivos = null!;
-            ILogger<AutoresController> logger = null!;
-            //creamos un doble para suplantar el outputCacheStore
-            IOutputCacheStore outputCacheStore = null!;
-            // La libreria NSubstitute permite probar servicios, haciendo un doble de la interface que incluye funcionalidades como que si fue llamado una o contadas veces, si se le mando paginación DTO, etc
-            IServicioAutores servicioAutores = Substitute.For<IServicioAutores>();
-
-            var controller = new AutoresController(context, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
-
             var paginacionDTO = new PaginacionDTO(2, 3);
             
             //Prueba
@@ -153,18 +135,11 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
         public async Task Post_DebeCrearAutor_CuandoEnviamosAutor()
         {
             // Preparación
-            var nombreBD = Guid.NewGuid().ToString();
-            var context = ConstruirContext(nombreBD);
-            var mapper = ConfigurarAutoMapper();
-            IAlmacenarArchivos almacenarArchivos = null!;
-            ILogger<AutoresController> logger = null!;
             //creamos un doble para suplantar el outputCacheStore
-            IOutputCacheStore outputCacheStore = new OutputCacheStoreFalso();
-            IServicioAutores servicioAutores = null!;
+            // IOutputCacheStore outputCacheStore = new OutputCacheStoreFalso();
 
             var nuevoAutor = new AutorCreacionDTO {Nombres = "nuevo", Apellidos = "autor"};
 
-            var controller = new AutoresController(context, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
             
             // Prueba
             var respuesta = await controller.Post(nuevoAutor);
