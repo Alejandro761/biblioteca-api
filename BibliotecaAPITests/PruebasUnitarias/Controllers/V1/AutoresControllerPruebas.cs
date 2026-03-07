@@ -75,6 +75,52 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
             var resultado = respuesta.Value;
             Assert.AreEqual(expected: 1, actual: resultado!.Id);
         }
+        
+        [TestMethod]
+        public async Task Get_RetornaAutorConLibros_CuandoAutorTieneLibros()
+        {
+            //Preparación
+            var nombreBD = Guid.NewGuid().ToString();
+            var context = ConstruirContext(nombreBD);
+            var mapper = ConfigurarAutoMapper();
+            IAlmacenarArchivos almacenarArchivos = null!;
+            ILogger<AutoresController> logger = null!;
+            IOutputCacheStore outputCacheStore = null!;
+            IServicioAutores servicioAutores = null!;
+
+            var libro1 = new Libro {Titulo = "Libro1"};
+            var libro2 = new Libro {Titulo = "Libro2"};
+            
+            var autor = new Autor {
+                Nombres = "Ale",
+                Apellidos = "Cast",
+                Libros = new List<AutorLibro>
+                {
+                    new AutorLibro {Libro = libro1},
+                    new AutorLibro {Libro = libro2}
+                }
+            };
+
+
+            context.Add(autor);
+
+            await context.SaveChangesAsync();
+
+            //no es recomendable usar el mismo contexto con el que creamos los autores
+
+            var context2 = ConstruirContext(nombreBD);
+
+            var controller = new AutoresController(context2, mapper, almacenarArchivos, logger, outputCacheStore, servicioAutores);
+
+            //Prueba
+            var respuesta = await controller.Get(1);
+
+            //verificacion
+            //como es un action result podemos castearlo a un statuscoderesult para obtener el codigo de estado
+            var resultado = respuesta.Value;
+            Assert.AreEqual(expected: 1, actual: resultado!.Id);
+            Assert.AreEqual(expected: 2, actual: resultado!.Libros.Count);
+        }
 
         [TestMethod]
         public async Task Get_DebeLlamarGetDelServicioAutores()
