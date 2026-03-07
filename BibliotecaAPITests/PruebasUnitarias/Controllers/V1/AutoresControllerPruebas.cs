@@ -12,6 +12,7 @@ using BibliotecaAPI.Servicios;
 using BibliotecaAPI.Servicios.V1;
 using BibliotecaAPITests.Utilidades;
 using BibliotecaAPITests.Utilidades.Dobles;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,8 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
         IServicioAutores servicioAutores = null!;
         private string nombreBD = Guid.NewGuid().ToString();
         private AutoresController controller = null!;
+        private const string cache = "autores-obtener";
+        private const string contenedor = "autores";
 
         [TestInitialize]
         public void Setup()
@@ -155,6 +158,107 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
             var context2 = ConstruirContext(nombreBD);
             var cantidad = await context2.Autores.CountAsync();
             Assert.AreEqual(expected: 1, actual: cantidad);
+        }
+
+        [TestMethod]
+        public async Task Put_Retornar404_CuandoAutorNoExiste()
+        {
+            // Prueba
+            var respuesta = await controller.Put(1, autorCreacionDTO: null!);
+            
+            // Verificación
+            var resultado = respuesta as StatusCodeResult;
+
+            Assert.AreEqual(expected: 404, actual: resultado!.StatusCode);
+        }
+        
+        [TestMethod]
+        public async Task Put_ActualizaAutor_CuandoEnviamosAutorSinFoto()
+        {
+            // Preparacion
+            var context = ConstruirContext(nombreBD);
+            context.Autores.Add(new Autor {
+                Nombres = "Ale", 
+                Apellidos = "Cast", 
+                Identificacion = "ale53"
+            });
+
+            await context.SaveChangesAsync();
+
+            var autorCreacionDTO = new AutorCreacionDTOConFoto
+            {
+                Nombres = "Ale2", 
+                Apellidos = "Cast2", 
+                Identificacion = "ale53453"
+            };
+            
+            // Prueba
+            var respuesta = await controller.Put(1, autorCreacionDTO);
+            
+            // Verificación
+            var resultado = respuesta as StatusCodeResult;
+
+            Assert.AreEqual(expected: 204, actual: resultado!.StatusCode);
+
+            var context2 = ConstruirContext(nombreBD);
+            var autorActualizado = await context2.Autores.SingleAsync();
+
+            Assert.AreEqual(expected: "Ale2", actual: autorActualizado.Nombres);
+            Assert.AreEqual(expected: "Cast2", actual: autorActualizado.Apellidos);
+            Assert.AreEqual(expected: "ale53453", actual: autorActualizado.Identificacion);
+            await outputCacheStore.Received(1).EvictByTagAsync(cache, default);
+            //le pasamos default pq no importan sus parametros, solo queremos saber que no se ejecuto
+            await almacenarArchivos.DidNotReceiveWithAnyArgs().Editar(default, default!, default!);
+        }
+        
+        [TestMethod]
+        public async Task Put_ActualizaAutor_CuandoEnviamosAutorConFoto()
+        {
+            // Preparacion
+            var context = ConstruirContext(nombreBD);
+
+            var urlAnterior = "url1";
+            var urlNueva = "url2";
+            // aseguramos que la función retorne la nueva url y que con esa se actualice la foto del autor
+            almacenarArchivos.Editar(default, default!, default!).ReturnsForAnyArgs(urlNueva);
+            
+            context.Autores.Add(new Autor {
+                Nombres = "Ale", 
+                Apellidos = "Cast", 
+                Identificacion = "ale53",
+                Foto = urlAnterior
+            });
+
+            await context.SaveChangesAsync();
+
+            var formFile = Substitute.For<IFormFile>();
+
+            var autorCreacionDTO = new AutorCreacionDTOConFoto
+            {
+                Nombres = "Ale2", 
+                Apellidos = "Cast2", 
+                Identificacion = "ale53453",
+                Foto = formFile
+            };
+            
+            // Prueba
+            var respuesta = await controller.Put(1, autorCreacionDTO);
+            
+            // Verificación
+            var resultado = respuesta as StatusCodeResult;
+
+            Assert.AreEqual(expected: 204, actual: resultado!.StatusCode);
+
+            var context2 = ConstruirContext(nombreBD);
+            var autorActualizado = await context2.Autores.SingleAsync();
+
+            Assert.AreEqual(expected: "Ale2", actual: autorActualizado.Nombres);
+            Assert.AreEqual(expected: "Cast2", actual: autorActualizado.Apellidos);
+            Assert.AreEqual(expected: "ale53453", actual: autorActualizado.Identificacion);
+            Assert.AreEqual(expected: urlNueva, actual: autorActualizado.Foto);
+            await outputCacheStore.Received(1).EvictByTagAsync(cache, default);
+            //le pasamos default pq no importan sus parametros, solo queremos saber que no se ejecuto
+            await almacenarArchivos.Received(1).Editar(urlAnterior, contenedor, formFile);
         }
     }
 }
