@@ -360,5 +360,59 @@ namespace BibliotecaAPITests.PruebasUnitarias.Controllers.V1
             Assert.AreEqual(expected: "139", autorBD.Identificacion);
             Assert.AreEqual(expected: "url1", autorBD.Foto);
         }
+
+        [TestMethod]
+        public async Task Delete_Retorna404_CuandoAutorNoExiste()
+        {
+            // Prueba
+            var respuesta = await controller.Delete(1);
+
+            // Verificación
+            var resultado = respuesta as StatusCodeResult;
+            Assert.AreEqual(expected: 404, actual: resultado!.StatusCode);
+        }
+        
+        [TestMethod]
+        public async Task Delete_BorraAutor_CuandoAutorExiste()
+        {
+            // Preparacion
+            var urlFoto = "url";
+
+            var context = ConstruirContext(nombreBD);
+
+            context.Autores.Add(new Autor
+            {
+                Nombres = "Ale",
+                Apellidos = "Cast",
+                Foto = urlFoto
+            });
+            
+            context.Autores.Add(new Autor
+            {
+                Nombres = "Ale2",
+                Apellidos = "Cast2",
+            });
+
+            await context.SaveChangesAsync();
+            
+            // Prueba
+            var respuesta = await controller.Delete(1);
+
+            // Verificación
+            var resultado = respuesta as StatusCodeResult;
+            Assert.AreEqual(expected: 204, actual: resultado!.StatusCode);
+
+            var context2 = ConstruirContext(nombreBD);
+            var cantidadAutores = await context2.Autores.CountAsync();
+            Assert.AreEqual(expected: 1, actual: cantidadAutores);
+
+            var autor2Existe = await context2.Autores.AnyAsync(x => x.Nombres == "Ale2");
+            Assert.IsTrue(autor2Existe);
+
+            await outputCacheStore.Received(1).EvictByTagAsync(cache, default);
+            await almacenarArchivos.Received(1).Borrar(urlFoto, contenedor);
+        }
+        
+
     }
 }
