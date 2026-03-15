@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
 using BibliotecaAPI.Datos;
@@ -16,6 +17,9 @@ namespace BibliotecaAPITests.Utilidades
 {
     public class BasePruebas
     {
+        // para que no haya problemas de minusculas y mayusculas a la hora de serializar un string
+        protected readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions {PropertyNameCaseInsensitive = true}; 
+        
         protected ApplicationDbContext ConstruirContext (string nombreBD)
         {
             var opciones = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(nombreBD).Options;
@@ -35,7 +39,7 @@ namespace BibliotecaAPITests.Utilidades
         }
         
         // metodo que permite en cualquier clase de prueba poder obtener una representación en memoria del webapi para realizar pruebas de integración
-        protected WebApplicationFactory<Program> ContruirWebApplicationFactory(string nombreBD, bool ignorarSeguridad = true)
+        protected WebApplicationFactory<Program> ConstruirWebApplicationFactory(string nombreBD, bool ignorarSeguridad = true)
         {
             var factory = new WebApplicationFactory<Program>();
             factory = factory.WithWebHostBuilder(builder =>
