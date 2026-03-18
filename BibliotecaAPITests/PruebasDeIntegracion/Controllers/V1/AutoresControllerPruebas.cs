@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using System.Text.Json;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
@@ -70,6 +71,55 @@ namespace BibliotecaAPITests.PruebasDeIntegracion.Controllers.V1
 
             // Verificación
             Assert.AreEqual(expected: HttpStatusCode.Unauthorized, actual: respuesta.StatusCode);
+        }
+        
+        [TestMethod]
+        public async Task Post_Devuelve403_CuandoUsuarioNoEsAdmin()
+        {
+            // Preparación
+            // false para no ignorar la seguridad
+            var factory = ConstruirWebApplicationFactory(nombreBD, ignorarSeguridad: false);
+            var token = await CrearUsuario(nombreBD, factory);
+            
+            var cliente = factory.CreateClient();
+
+            cliente.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var autorCreacionDTO = new AutorCreacionDTO {Nombres = "Alex", Apellidos = "Castañeda", Identificacion = "1299"};
+            
+            // Prueba
+            var respuesta = await cliente.PostAsJsonAsync(url, autorCreacionDTO);
+
+            // Verificación
+            Assert.AreEqual(expected: HttpStatusCode.Forbidden, actual: respuesta.StatusCode);
+        }
+        
+        [TestMethod]
+        public async Task Post_Devuelve201_CuandoUsuarioEsAdmin()
+        {
+            // Preparación
+            // false para no ignorar la seguridad
+            var factory = ConstruirWebApplicationFactory(nombreBD, ignorarSeguridad: false);
+
+            var claims = new List<Claim> {adminClaim};
+            
+            var token = await CrearUsuario(nombreBD, factory, claims);
+            
+            var cliente = factory.CreateClient();
+
+            cliente.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var autorCreacionDTO = new AutorCreacionDTO {Nombres = "Alex", Apellidos = "Castañeda", Identificacion = "1299"};
+            
+            // Prueba
+            var respuesta = await cliente.PostAsJsonAsync(url, autorCreacionDTO);
+
+            // Verificación
+            respuesta.EnsureSuccessStatusCode();
+
+            Assert.AreEqual(expected: HttpStatusCode.Created, actual: respuesta.StatusCode);
         }
     }
 }
