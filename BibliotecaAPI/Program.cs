@@ -186,6 +186,16 @@ builder.Services.AddSwaggerGen(opciones =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    if (dbContext.Database.IsRelational())
+    {
+        // cuando se corra la app se ejecutarán las migraciones
+        dbContext.Database.Migrate();
+    }
+}
+
 // area de middlewares
 
 // manejo de errores

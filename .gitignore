@@ -55,3 +55,4 @@ nunit-*.xml
 
 .vs/
 /BibliotecaAPI/appsettings.Development.json
+/BibliotecaAPI/appsettings.json

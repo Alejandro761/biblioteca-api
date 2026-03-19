@@ -13,7 +13,7 @@ namespace BibliotecaAPITests.PruebasDeIntegracion.Controllers.V1
         [TestMethod]
         public async Task Post_Devuelve400_CuandoAutoresIdEsVacio ()
         {
-            // Preparación
+            // Preparación  
             var factory = ConstruirWebApplicationFactory(nombreBD);
             var cliente = factory.CreateClient();
             var libroCreacionDTO = new LibroCreacionDTO {Titulo = "Ale's Journey"};
