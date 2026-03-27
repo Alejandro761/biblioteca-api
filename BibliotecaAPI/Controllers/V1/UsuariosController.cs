@@ -64,7 +64,7 @@ namespace BibliotecaAPI.Controllers.V1
 
             if (resultado.Succeeded)
             {
-                var respuetaAutenticacion = await ConstruirToken(credencialesUsuariosDTO);
+                var respuetaAutenticacion = await ConstruirToken(credencialesUsuariosDTO, usuario.Id);
                 return respuetaAutenticacion;
             }
             else
@@ -100,7 +100,7 @@ namespace BibliotecaAPI.Controllers.V1
 
             if (resultado.Succeeded)
             {
-                return await ConstruirToken(credencialesUsuariosDTO);
+                return await ConstruirToken(credencialesUsuariosDTO, usuario.Id);
             }
             else
             {
@@ -137,7 +137,7 @@ namespace BibliotecaAPI.Controllers.V1
 
             var credencialesUsuariosDTO = new CredencialesUsuariosDTO { Email = usuario.Email! };
 
-            var respuetaAutenticacion = await ConstruirToken(credencialesUsuariosDTO);
+            var respuetaAutenticacion = await ConstruirToken(credencialesUsuariosDTO, usuario.Id);
             return respuetaAutenticacion;
         }
 
@@ -182,14 +182,15 @@ namespace BibliotecaAPI.Controllers.V1
         }
 
         //construccion del json web token
-        private async Task<RespuestaAutenticacionDTO> ConstruirToken(CredencialesUsuariosDTO credencialesUsuariosDTO)
+        private async Task<RespuestaAutenticacionDTO> ConstruirToken(CredencialesUsuariosDTO credencialesUsuariosDTO, string usuarioId)
         {
             //los claims son info acerca de los usuarios
             var claims = new List<Claim>
             {
                 //un claim basicamente es una llave y un valor
                 new Claim("email", credencialesUsuariosDTO.Email),
-                new Claim("lo que yo quiera", "cualquier valor")
+                new Claim("lo que yo quiera", "cualquier valor"),
+                new Claim("usuarioId", usuarioId)
             };
 
             //buscar al usuario por email
