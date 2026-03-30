@@ -25,13 +25,15 @@ namespace BibliotecaAPI.Controllers.V1
         private readonly IServiciosUsuarios serviciosUsuarios;
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly IServicioLlaves servicioLlaves;
 
         public UsuariosController(UserManager<Usuario> userManager,
             IConfiguration configuration,
             SignInManager<Usuario> signInManager,
             IServiciosUsuarios serviciosUsuarios,
             ApplicationDbContext context,
-            IMapper mapper
+            IMapper mapper,
+            IServicioLlaves servicioLlaves
         )
         {
             this.userManager = userManager;
@@ -40,6 +42,7 @@ namespace BibliotecaAPI.Controllers.V1
             this.serviciosUsuarios = serviciosUsuarios;
             this.context = context;
             this.mapper = mapper;
+            this.servicioLlaves = servicioLlaves;
         }
 
         [HttpGet]
@@ -65,6 +68,7 @@ namespace BibliotecaAPI.Controllers.V1
             if (resultado.Succeeded)
             {
                 var respuetaAutenticacion = await ConstruirToken(credencialesUsuariosDTO, usuario.Id);
+                await servicioLlaves.CrearLlave(usuario.Id, TipoLlave.Gratuita);
                 return respuetaAutenticacion;
             }
             else

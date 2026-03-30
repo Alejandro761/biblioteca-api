@@ -87,6 +87,8 @@ builder.Services.AddScoped<BibliotecaAPI.Servicios.V1.IGeneradorEnlaces, Bibliot
 builder.Services.AddScoped<HATEOASAutorAttribute>();
 builder.Services.AddScoped<HATEOASAutoresAttribute>();
 
+builder.Services.AddScoped<IServicioLlaves, ServicioLlaves>();
+
 
 //nos permite acceder al contexto http desde cualquier clase
 builder.Services.AddHttpContextAccessor();
