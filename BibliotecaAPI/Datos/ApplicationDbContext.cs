@@ -25,5 +25,6 @@ namespace BibliotecaAPI.Datos
         public DbSet<AutorLibro> AutoresLibros { get; set; }
         public DbSet<Error> Errores { get; set; }
         public DbSet<LlaveAPI> LlaveAPIs { get; set; }
+        public DbSet<Peticion> Peticiones { get; set; }
     }
 }
