@@ -240,6 +240,8 @@ app.UseSwaggerUI(opciones =>
 
 app.UseCors();
 
+app.UseLimitarPeticiones();
+
 app.UseOutputCache();
 
 app.MapControllers();
