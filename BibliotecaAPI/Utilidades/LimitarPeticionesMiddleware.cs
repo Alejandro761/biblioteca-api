@@ -1,6 +1,7 @@
 ﻿using BibliotecaAPI.Datos;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -26,6 +27,34 @@ namespace BibliotecaAPI.Utilidades
 
         public async Task InvokeAsync(HttpContext httpContext, ApplicationDbContext context)
         {
+            var endpoint = httpContext.GetEndpoint();
+
+            if (endpoint is null)
+            {
+                await next(httpContext);
+                return;
+            }
+
+            var actionDescriptor = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
+            
+            if (actionDescriptor is not null)
+            {
+                // inherit true sirve para que tome en cuenta si el atribute está en una clase base
+                var accionTieneAtributoIgnorarLimitarPeticiones = actionDescriptor.MethodInfo
+                    .GetCustomAttributes(typeof(DeshabilitarLimitarPeticionesAttribute), inherit: true)
+                    .Any();
+
+                var controladorTieneAtributoIgnorarLimitarPeticiones = actionDescriptor.ControllerTypeInfo
+                    .GetCustomAttributes(typeof(DeshabilitarLimitarPeticionesAttribute), inherit: true)
+                    .Any();
+
+                if (accionTieneAtributoIgnorarLimitarPeticiones || controladorTieneAtributoIgnorarLimitarPeticiones)
+                {
+                    await next(httpContext);
+                    return;
+                }
+            }
+            
             var limitarPeticionesDTO = optionsLimitarPeticiones.CurrentValue;
 
             var llaveStringValues = httpContext.Request.Headers["X-Api-Key"];
