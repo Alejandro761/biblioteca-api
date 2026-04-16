@@ -75,7 +75,10 @@ namespace BibliotecaAPI.Utilidades
 
             var llave = llaveStringValues[0];
 
-            var llaveDB = await context.LlaveAPIs.FirstOrDefaultAsync(x => x.Llave == llave);
+            var llaveDB = await context.LlaveAPIs
+                .Include(x => x.RestriccionesDominio)
+                .Include(x => x.RestriccionesIP)
+                .FirstOrDefaultAsync(x => x.Llave == llave);
 
             if (llaveDB is null)
             {
@@ -88,6 +91,14 @@ namespace BibliotecaAPI.Utilidades
             {
                 httpContext.Response.StatusCode = 400;
                 await httpContext.Response.WriteAsync("La llave se encuentra inactiva");
+                return;
+            }
+
+            var restriccionesSuperadas = PeticionSuperaAlgunaDeLasRestricciones(llaveDB, httpContext);
+
+            if (!restriccionesSuperadas)
+            {
+                httpContext.Response.StatusCode = 403;
                 return;
             }
 
@@ -111,6 +122,45 @@ namespace BibliotecaAPI.Utilidades
             await context.SaveChangesAsync();
 
             await next(httpContext);
+        }
+
+        private bool PeticionSuperaAlgunaDeLasRestricciones(LlaveAPI llaveApi, HttpContext httpContext)
+        {
+            var hayRestricciones = llaveApi.RestriccionesDominio.Any() || llaveApi.RestriccionesIP.Any();
+            
+            if (!hayRestricciones)
+            {
+                return true;
+            }
+
+            var peticionSuperaLasRestriccionesDeDominio = 
+                PeticionSuperaLasRestriccionesDeDominio(llaveApi.RestriccionesDominio, httpContext);
+
+            return peticionSuperaLasRestriccionesDeDominio;
+        }
+
+        private bool PeticionSuperaLasRestriccionesDeDominio(List<RestriccionDominio> restricciones, 
+            HttpContext httpContext)
+        {
+            if (restricciones is null || restricciones.Count == 0)
+            {
+                return false;
+            }
+
+            // referer se refiere a desde donde viene la peticion (url)
+            var referer = httpContext.Request.Headers["referer"].ToString();
+
+            if (referer == string.Empty)
+            {
+                return false;
+            }
+
+            var miURI = new Uri(referer);
+            var dominio = miURI.Host;
+
+            var superaRestriccion = restricciones.Any(x => x.Domininio == dominio);
+
+            return superaRestriccion;
         }
     }
 }
