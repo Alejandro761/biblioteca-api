@@ -7,14 +7,11 @@ namespace BibliotecaAPI.Servicios
     {
         private readonly UserManager<Usuario> userManager;
         private readonly IHttpContextAccessor contextAccessor;
-        private readonly ILogger<ServiciosUsuarios> logger;
 
-        public ServiciosUsuarios(UserManager<Usuario> userManager, IHttpContextAccessor contextAccessor, 
-            ILogger<ServiciosUsuarios> logger)
+        public ServiciosUsuarios(UserManager<Usuario> userManager, IHttpContextAccessor contextAccessor)
         {
             this.userManager = userManager;
             this.contextAccessor = contextAccessor;
-            this.logger = logger;
         }
 
         public string? ObtenerUsuarioId()
