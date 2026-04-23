@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.IO.Compression;
+using AutoMapper;
 using BibliotecaAPI.Datos;
 using BibliotecaAPI.DTOs;
 using BibliotecaAPI.Entidades;
@@ -36,6 +37,7 @@ namespace BibliotecaAPI.Controllers.V1
             var usuarioId = serviciosUsuarios.ObtenerUsuarioId();
             var llaves = await context.LlaveAPIs
                 .Include(x => x.RestriccionesDominio)
+                .Include(x => x.RestriccionesIP)
                 .Where(x => x.UsuarioId == usuarioId).ToListAsync();
             return mapper.Map<IEnumerable<LlaveDTO>>(llaves);
         }
