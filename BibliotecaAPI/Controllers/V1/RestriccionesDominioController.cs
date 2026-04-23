@@ -16,12 +16,15 @@ namespace BibliotecaAPI.Controllers.V1
     public class RestriccionesDominioController: ControllerBase
     {
         private readonly ApplicationDbContext context;
-        private readonly ServiciosUsuarios serviciosUsuarios;
+        private readonly IServiciosUsuarios serviciosUsuarios;
+        private readonly ILogger<RestriccionesDominioController> logger;
 
-        public RestriccionesDominioController(ApplicationDbContext context, ServiciosUsuarios serviciosUsuarios)
+        public RestriccionesDominioController(ApplicationDbContext context,
+            IServiciosUsuarios serviciosUsuarios, ILogger<RestriccionesDominioController> logger)
         {
             this.context = context;
             this.serviciosUsuarios = serviciosUsuarios;
+            this.logger = logger;
         }
 
         [HttpPost]
@@ -30,12 +33,17 @@ namespace BibliotecaAPI.Controllers.V1
             var llaveDB = await context.LlaveAPIs.FirstOrDefaultAsync(x => x.Id == 
                 restriccionDominioCreacionDTO.LlaveId);
 
+            logger.LogInformation("llaveDB is null ??");
+            
             if (llaveDB is null)
             {
+            logger.LogInformation("yes");
                 return NotFound();
             }
+            logger.LogInformation("no");
 
             var usuarioId = serviciosUsuarios.ObtenerUsuarioId();
+            logger.LogInformation("obtenerUsuarioId");
 
             if (llaveDB.UsuarioId != usuarioId)
             {

@@ -19,7 +19,8 @@ namespace BibliotecaAPI.Utilidades
         private readonly RequestDelegate next;
         private readonly IOptionsMonitor<LimitarPeticionesDTO> optionsLimitarPeticiones;
 
-        public LimitarPeticionesMiddleware(RequestDelegate next, IOptionsMonitor<LimitarPeticionesDTO> optionsLimitarPeticiones)
+        public LimitarPeticionesMiddleware(RequestDelegate next, IOptionsMonitor<LimitarPeticionesDTO> optionsLimitarPeticiones
+        )
         {
             this.next = next;
             this.optionsLimitarPeticiones = optionsLimitarPeticiones;

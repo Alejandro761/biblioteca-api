@@ -10,6 +10,7 @@ namespace BibliotecaAPI.Utilidades
         public AutoMapperProfiles()
         {
             CreateMap<LlaveAPI, LlaveDTO>();
+            CreateMap<RestriccionDominio, RestriccionDominioDTO>();
             
             CreateMap<Autor, AutorDTO>()
                 .ForMember(dto => dto.NombreCompleto, config => config.MapFrom(
