@@ -70,7 +70,11 @@ builder.Services.AddRateLimiter(opciones =>
             {
                 PermitLimit = 5,
                 Window = TimeSpan.FromSeconds(10),
-                SegmentsPerWindow = 2
+                SegmentsPerWindow = 2,
+                // cuando se acaben las peticiones se podra tener una peticion extra en espera hasta que se pase a la siguiente ventana
+                QueueLimit = 1,
+                // especificamos a quien se la prioridad en la cola, a las mas nuevas o las mas viejas
+                QueueProcessingOrder = QueueProcessingOrder.NewestFirst
             }
         );
     });
