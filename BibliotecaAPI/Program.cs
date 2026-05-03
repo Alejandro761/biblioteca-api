@@ -105,6 +105,22 @@ builder.Services.AddRateLimiter(opciones =>
         );
     });
 
+    // limitar por usuario
+    opciones.AddPolicy("prueba-usuario", context =>
+    {
+        var emailClaim = context.User.Claims.Where(x => x.Type == "email").FirstOrDefault()!;
+        var email = emailClaim.Value;
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: email,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 2,
+                Window = TimeSpan.FromSeconds(20)
+            }
+        );
+    });
+
     opciones.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
     opciones.OnRejected = async (context, cancellationToken) =>
