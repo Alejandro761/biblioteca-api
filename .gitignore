@@ -56,3 +56,10 @@ nunit-*.xml
 .vs/
 /BibliotecaAPI/appsettings.Development.json
 /BibliotecaAPI/appsettings.json
+/BibliotecaAPI/Properties/PublishProfiles/BibliotecaAPI20260319030140 - Web Deploy.pubxml
+/BibliotecaAPI/Properties/serviceDependencies.json
+/BibliotecaAPI/Properties/serviceDependencies.BibliotecaAPI20260319030140 - Web Deploy.json
+/BibliotecaAPI/Properties/PublishProfiles/BibliotecaAPI20260319030140 - Web Deploy.pubxml.user
+/BibliotecaAPI/Properties/ServiceDependencies/BibliotecaAPI20260319030140 - Web Deploy
+/BibliotecaAPI/Properties/serviceDependencies.BibliotecaAPI20260319030140 - Web Deploy.json.user
+/BibliotecaAPI/.config/dotnet-tools.json

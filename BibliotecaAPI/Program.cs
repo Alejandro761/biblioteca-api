@@ -93,7 +93,7 @@ builder.Services.AddRateLimiter(opciones =>
         );
     });
     
-    // solo se le permite al usuario hacer 1 peticion al mismo endpoint, hasta que termine la accion podra volver a hacer alguna peticion a ese endpoint
+    // solo se le permite a los usuarios hacer 1 peticion al mismo endpoint, hasta que termine la accion podra volver a hacer alguna peticion a ese endpoint
     opciones.AddPolicy("concurrencia", context =>
     {
         return RateLimitPartition.GetConcurrencyLimiter(
