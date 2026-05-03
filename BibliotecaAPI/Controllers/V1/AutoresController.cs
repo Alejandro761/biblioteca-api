@@ -14,6 +14,8 @@ using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.OutputCaching;
 using BibliotecaAPI.Servicios.V1;
 using BibliotecaAPI.Utilidades.V1;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.Tasks;
 
 namespace BibliotecaAPI.Controllers.V1
 {
@@ -21,6 +23,7 @@ namespace BibliotecaAPI.Controllers.V1
     [Route("api/v1/autores")]
     [Authorize(Policy = "esadmin")]
     [FiltroAgregarCabeceras("controlador", "autores")]
+    [DeshabilitarLimitarPeticiones]
     public class AutoresController : ControllerBase
     {
         //instancia de ApplicationDbContext para interactuar con la bd
@@ -44,6 +47,31 @@ namespace BibliotecaAPI.Controllers.V1
             this.outputCacheStore = outputCacheStore;
             this.servicioAutores = servicioAutores;
         }
+
+        [HttpGet("movil")]
+        [AllowAnonymous]  
+        [EnableRateLimiting("movil")]
+        public IActionResult GetMovil()
+        {
+            return Ok("movil");
+        }      
+
+        [HttpGet("cubeta")]
+        [AllowAnonymous]  
+        [EnableRateLimiting("cubeta")]
+        public IActionResult GetCubeta()
+        {
+            return Ok("cubeta");
+        }      
+
+        [HttpGet("concurrencia")]
+        [AllowAnonymous]  
+        [EnableRateLimiting("concurrencia")]
+        public async Task<IActionResult> GetConcurrencia()
+        {
+            await Task.Delay(5000);
+            return Ok("concurrencia");
+        }      
 
         [HttpGet(Name = "ObtenerAutoresV1")]
         //AllowAnonymous indica que este endpoint se puede usar sin estar autenticado
@@ -87,6 +115,8 @@ namespace BibliotecaAPI.Controllers.V1
 
         [HttpGet("filtrar", Name = "FiltrarAutoresV1")]
         [AllowAnonymous]
+        // le pasamo el nombre de la politica a usar 
+        [EnableRateLimiting("general")]
         public async Task<ActionResult> Filtrar([FromQuery] AutorFiltroDTO autorFiltroDTO)
         {
             var queryable = context.Autores.AsQueryable();

@@ -11,6 +11,7 @@ using BibliotecaAPI.Utilidades;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -87,6 +88,7 @@ namespace BibliotecaAPI.Controllers.V1
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("estricta")]
         public async Task<ActionResult<RespuestaAutenticacionDTO>> Login(CredencialesUsuariosDTO credencialesUsuariosDTO)
         {
             var usuario = await userManager.FindByEmailAsync(credencialesUsuariosDTO.Email);

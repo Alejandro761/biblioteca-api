@@ -24,18 +24,82 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRateLimiter(opciones =>
 {
-   opciones.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            // agrupamos a los usuarios por ip o por "desconocido" si no tenemos la ip
+//    opciones.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+//         RateLimitPartition.GetFixedWindowLimiter(
+//             // agrupamos a los usuarios por ip o por "desconocido" si no tenemos la ip
+//             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+//             // 5 peticiones cada 10 segundos
+//             factory: _ => new FixedWindowRateLimiterOptions
+//             {
+//                 PermitLimit = 5,
+//                 Window = TimeSpan.FromSeconds(10)
+//             }
+//         )
+//     );
+
+    opciones.AddPolicy("general", context =>
+    {
+        return RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
-            // 5 peticiones cada 10 segundos
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 5,
+                PermitLimit = 10,
                 Window = TimeSpan.FromSeconds(10)
             }
-        )
-    );
+        );
+    });
+    
+    opciones.AddPolicy("estricta", context =>
+    {
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 2,
+                Window = TimeSpan.FromSeconds(5)
+            }
+        );
+    });
+
+    // se divide el periodo en 2 segmentos, cada 5 seg se reciclan las peticiones usadas
+    opciones.AddPolicy("movil", context =>
+    {
+        return RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromSeconds(10),
+                SegmentsPerWindow = 2
+            }
+        );
+    });
+    
+    // periodos de 10 seg con 5 tokens, cada 10 seg se habilitan 2 tokens de los cuales cada token se habilitará cada 5 seg
+    opciones.AddPolicy("cubeta", context =>
+    {
+        return RateLimitPartition.GetTokenBucketLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+            factory: _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 5,
+                TokensPerPeriod = 2,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(10)
+            }
+        );
+    });
+    
+    // solo se le permite al usuario hacer 1 peticion al mismo endpoint, hasta que termine la accion podra volver a hacer alguna peticion a ese endpoint
+    opciones.AddPolicy("concurrencia", context =>
+    {
+        return RateLimitPartition.GetConcurrencyLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+            factory: _ => new ConcurrencyLimiterOptions
+            {
+                PermitLimit = 1,
+            }
+        );
+    });
 });
 
 builder.Services.AddOutputCache(opciones =>
