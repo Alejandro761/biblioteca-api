@@ -100,6 +100,21 @@ builder.Services.AddRateLimiter(opciones =>
             }
         );
     });
+
+    opciones.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    opciones.OnRejected = async (context, cancellationToken) =>
+    {
+        //  retryafeter es una variable que guarda el tiempo que falta para volver a intentar una peticion
+        // por el momento retryafter solo se encuentra disponible en ventanas
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers["Retry-After"] = retryAfter.TotalSeconds.ToString();
+        }
+
+        await context.HttpContext.Response.WriteAsync("Limite excedido. Intente más tarde.", 
+            cancellationToken);
+    };
 });
 
 builder.Services.AddOutputCache(opciones =>
