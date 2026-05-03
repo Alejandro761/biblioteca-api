@@ -16,10 +16,27 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Area de servicios
+
+builder.Services.AddRateLimiter(opciones =>
+{
+   opciones.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            // agrupamos a los usuarios por ip o por "desconocido" si no tenemos la ip
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+            // 5 peticiones cada 10 segundos
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromSeconds(10)
+            }
+        )
+    );
+});
 
 builder.Services.AddOutputCache(opciones =>
 {
@@ -240,6 +257,10 @@ app.UseSwaggerUI(opciones =>
     opciones.SwaggerEndpoint("/swagger/v1/swagger.json", "Biblioteca API V1");
     opciones.SwaggerEndpoint("/swagger/v2/swagger.json", "Biblioteca API V2");
 });
+
+app.UseStaticFiles();
+
+app.UseRateLimiter();
 
 app.UseCors();
 
